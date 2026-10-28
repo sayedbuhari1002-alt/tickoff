@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../domain/logic/analytics_engine.dart';
+import '../../domain/logic/habit_engine.dart';
 import '../../domain/models/habit.dart';
 
 class StreakHistoryPoint {
@@ -82,7 +83,7 @@ List<StreakHistoryPoint> buildStreakHistory({
   final List<StreakHistoryPoint> points = <StreakHistoryPoint>[];
   int run = 0;
   for (DateTime day = DateTime(lowerBound.year, lowerBound.month, lowerBound.day); !day.isAfter(today); day = addDays(day, 1)) {
-    final Tally tally = analytics.tally(habits, records, day, day);
+    final tally = analytics.tally(habits, records, day, day);
     if (!tally.hasData) {
       points.add(StreakHistoryPoint(day: day, streak: run, hasData: false));
     } else {
