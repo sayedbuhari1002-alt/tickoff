@@ -19,16 +19,9 @@
 - Habit analytics start at the habit's creation date instead of pulling the start date earlier from stale records.
 - Android scaffold script adds notification/camera/microphone permissions, sets minSdk 23, and configures core-library desugaring for notification plugins.
 
-## CI log follow-up fixes
-- Escaped apostrophes in the count-reset confirmation strings so the habit detail source parses.
-- Imported the `Tally` definition into the streak-history chart.
-- Imported the `HabitUi` extension used by the settings reorder list.
-- Updated Android scaffold preparation to add `desugar_jdk_libs` even when the generated Flutter Kotlin Gradle template has no existing `dependencies` block.
-- Changed the GitHub Actions formatting step to run `dart format .` before analysis, tests, and the APK build.
-
 ## Important verification gaps
 - Flutter/Dart SDK was unavailable in the editing environment, so `dart format`, `flutter analyze`, `flutter test`, and `flutter build apk` could not be run.
-- The latest supplied GitHub Actions log reported 97 passing tests and five widget-test files that failed to load because of shared source compilation errors. This revision patches the logged causes, but the workflow has not yet been rerun to verify the fix.
+- The 13 previously failing Stage 2+3 tests could not be diagnosed because the original failure logs were not provided and the Flutter test runner is unavailable here.
 - A native Android launcher home-screen widget is not implemented; the Widgets settings screen currently configures in-app dashboard sections.
 - Task/ habit synchronization has been implemented through shared habit completion state for the dashboard/task actions, but still requires full integration tests on GitHub Actions and a real device.
 

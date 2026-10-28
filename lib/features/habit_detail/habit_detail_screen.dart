@@ -231,8 +231,8 @@ class HabitDetailScreen extends ConsumerWidget {
                                       final bool? confirm = await showDialog<bool>(
                                         context: context,
                                         builder: (BuildContext dialogContext) => AlertDialog(
-                                          title: const Text("Reset today's count?"),
-                                          content: const Text("This resets only today's count to zero."),
+                                          title: const Text('Reset today's count?'),
+                                          content: const Text('This resets only today's count to zero.'),
                                           actions: <Widget>[
                                             TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
                                             FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Reset')),

@@ -46,15 +46,6 @@ if [ -f "$APP_GRADLE" ]; then
     sed -i '/compileOptions {/a\        isCoreLibraryDesugaringEnabled = true' "$APP_GRADLE"
   fi
   if ! grep -q 'desugar_jdk_libs' "$APP_GRADLE"; then
-    if grep -q 'dependencies[[:space:]]*{' "$APP_GRADLE"; then
-      sed -i '/dependencies[[:space:]]*{/a\    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")' "$APP_GRADLE"
-    else
-      cat >> "$APP_GRADLE" <<'GRADLE_DEPENDENCIES'
-
-dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
-}
-GRADLE_DEPENDENCIES
-    fi
+    sed -i '/dependencies {/a\    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")' "$APP_GRADLE"
   fi
 fi

@@ -7,7 +7,6 @@ import '../../domain/models/models.dart';
 import '../../state/app_data.dart';
 import '../../state/app_state.dart';
 import '../../state/preferences_state.dart';
-import '../../shared/utils/habit_ui.dart';
 
 class FeatureSettingsScreen extends ConsumerWidget {
   const FeatureSettingsScreen({super.key, required this.kind});

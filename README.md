@@ -162,6 +162,14 @@ SQLite via `sqflite` (`lib/data/`). Schema version 1:
 Run locally with `flutter test` once Flutter is installed.
 
 
+## Stage 4 implementation pass (in progress)
+
+- Added SQLite schema migration v2 and a local task table with task metadata, priority, due date, colour/icon fields, reminder metadata, text/photo/audio path fields, and parent-task relationships.
+- Added a Tasks bottom-navigation destination with task creation/editing, priorities, categories, colour selection, subtasks, completion, pause/resume, duplicate, delete, date picker, and a 30-day completion chart.
+- Added task data service/state backed by the existing SQLite database.
+- Corrected the habit Due-filter engine to exclude habits already completed for the selected date.
+- This pass has not yet completed production notification scheduling, native photo/audio capture and playback, full task/habit two-way synchronisation, all settings screens, or comprehensive automated validation. Review and test these before treating Stage 4 as complete.
+
 ## Stage 4 implementation candidate
 
 This branch adds a local task manager alongside the original habit tracker. It retains the existing SQLite habit tables, adds the `tasks` table through the v1-to-v2 migration, and adds completion timestamps plus a 30-day task-history snapshot table in v3.
@@ -186,8 +194,4 @@ This branch adds a local task manager alongside the original habit tracker. It r
 - The Widgets settings currently controls in-app dashboard sections. A native Android launcher home-screen widget is not included in this candidate.
 
 ### Validation status
-This project was edited in an environment without the Flutter/Dart SDK, so Flutter formatting, static analysis, the complete Flutter test suite, Android APK compilation, and real-device verification cannot be run locally here. Static source/import checks, YAML parsing, shell syntax checks, and ZIP integrity checks are available, but they are not substitutes for a real Flutter build.
-
-The first GitHub Actions run (`Build Android APK #4`, Flutter 3.47.8) reported three source-level issues: a malformed string in the habit detail screen, a missing import for `Tally` in streak history, and a missing habit UI extension import in settings. Those shared compile errors caused five widget test files to fail loading; 97 tests passed. The APK build separately failed because the generated Kotlin Gradle file did not receive the required `desugar_jdk_libs` dependency even though core-library desugaring was enabled. This revision patches those findings and makes the workflow format Dart sources before analysis/tests. **The fixes still require a fresh GitHub Actions run; they are not yet verified.**
-
-A native Android launcher home-screen widget is not included. Use a separate GitHub branch for this candidate and preserve the last working project/APK until the new workflow and device checks pass.
+This project was edited in an environment without the Flutter/Dart SDK and without network access to install it. A source delimiter scan, relative-import existence scan, YAML parsing, and shell syntax check were performed. Flutter formatting, static analysis, the complete Flutter test suite, Android APK compilation, and real-device verification have **not** been run here. Use the GitHub Actions workflow to perform those checks before installing this candidate as an upgrade. Treat any compile/test failures as unresolved until their logs are reviewed.
