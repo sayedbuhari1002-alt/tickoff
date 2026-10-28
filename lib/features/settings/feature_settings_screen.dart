@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/icons/habit_icons.dart';
 import '../../domain/models/models.dart';
 import '../../state/app_data.dart';
 import '../../state/app_state.dart';
@@ -49,7 +50,7 @@ class FeatureSettingsScreen extends ConsumerWidget {
       case 'rearrange':
         final AppData? data = ref.watch(appDataProvider).valueOrNull;
         final List<Habit> habits = data?.activeHabits ?? <Habit>[];
-        return Scaffold(appBar: AppBar(title: const Text('Rearrange habits')), body: data == null ? const Center(child: CircularProgressIndicator()) : habits.isEmpty ? const Center(child: Text('No habits to rearrange.')) : ReorderableListView.builder(padding: const EdgeInsets.all(12), itemCount: habits.length, onReorder: (int oldIndex, int newIndex) async { if (newIndex > oldIndex) newIndex--; final List<Habit> reordered = List<Habit>.of(habits); final Habit moved = reordered.removeAt(oldIndex); reordered.insert(newIndex, moved); for (int i = 0; i < reordered.length; i++) { await ref.read(appDataProvider.notifier).saveHabit(reordered[i].copyWith(sortOrder: i)); } }, itemBuilder: (BuildContext context, int index) { final Habit habit = habits[index]; return Card(key: ValueKey<String>(habit.id), color: AppColors.surface, child: ListTile(leading: Icon(habit.icon, color: habit.color), title: Text(habit.title), trailing: const Icon(Icons.drag_handle))); }));
+        return Scaffold(appBar: AppBar(title: const Text('Rearrange habits')), body: data == null ? const Center(child: CircularProgressIndicator()) : habits.isEmpty ? const Center(child: Text('No habits to rearrange.')) : ReorderableListView.builder(padding: const EdgeInsets.all(12), itemCount: habits.length, onReorder: (int oldIndex, int newIndex) async { if (newIndex > oldIndex) newIndex--; final List<Habit> reordered = List<Habit>.of(habits); final Habit moved = reordered.removeAt(oldIndex); reordered.insert(newIndex, moved); for (int i = 0; i < reordered.length; i++) { await ref.read(appDataProvider.notifier).saveHabit(reordered[i].copyWith(sortOrder: i)); } }, itemBuilder: (BuildContext context, int index) { final Habit habit = habits[index]; return Card(key: ValueKey<String>(habit.id), color: AppColors.surface, child: ListTile(leading: Icon(iconForKey(habit.iconKey), color: Color(habit.colorValue)), title: Text(habit.title), trailing: const Icon(Icons.drag_handle))); }));
       default:
         return Scaffold(appBar: AppBar(title: const Text('Settings')), body: const Center(child: Text('Unknown setting.')));
     }
