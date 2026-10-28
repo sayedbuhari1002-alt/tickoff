@@ -1,0 +1,24 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+pubspec.lock
+
+# Android (local-only files; the android/ folder itself may be committed)
+android/local.properties
+android/.gradle/
+android/captures/
+android/**/GeneratedPluginRegistrant.*
+*.jks
+*.keystore
+key.properties
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
