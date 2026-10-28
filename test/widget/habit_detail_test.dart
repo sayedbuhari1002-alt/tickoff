@@ -15,7 +15,8 @@ InMemoryAppRepository seeded() {
 
 Future<void> openDetail(WidgetTester tester, InMemoryAppRepository repo) async {
   await pumpApp(tester, repo: repo);
-  await tester.tap(find.text('Reading Books'));
+  await openHabitsTab(tester);
+  await tester.tap(find.byKey(const ValueKey<String>('h1')));
   await tester.pumpAndSettle();
 }
 

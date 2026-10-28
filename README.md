@@ -1,70 +1,60 @@
-# TickOff Replacement
+# TickOff Replacement — Stage 5 enhancement candidate
 
-Offline Android habit tracker modelled on the supplied TickOff screenshots.
-All data stays on the device in a SQLite database. There is no login, ads,
-subscription, cloud backup or sync. Analytics and achievements are free.
+Offline-first Flutter habit and task tracker based on the supplied TickOff
+screenshots. Data stays on the device in SQLite. There is no login, ads,
+subscription, cloud backup, sync or Firebase. All features are intended to be
+available without a paywall.
 
-**Status: Stages 1-3 written (foundation, habit management, SQLite storage,
-streak engine, analytics, achievements).**
-The code has been written and statically sanity-checked, but it has NOT been
-compiled, tested or built by the author (no Dart/Flutter toolchain was
-available). Treat every claim of "works" as unverified until the GitHub
-Actions run is green and you have tried the APK on your phone.
+**Verification status:** Stage 5 source changes are implemented, but this ZIP
+is not a verified release. Flutter/Dart are unavailable in the editing
+container, so formatting, static analysis, unit/widget/database tests, APK
+compilation and device testing were not run here. The static checks and exact
+limitations are listed at the end of this file. Use a separate Git branch and
+review its GitHub Actions run before replacing your working version.
 
-## Build the APK with GitHub (no local install)
+## Build the APK with GitHub (no local Flutter install)
 
-1. Open your existing repository on github.com.
-2. Replace its files with the contents of this project (see "Updating your
-   existing repository" below).
-3. Open the **Actions** tab. "Build Android APK" starts on every push to
-   `main` (or press **Run workflow**).
-4. When it finishes, open the run and download **tickoff-apk** from the
-   **Artifacts** section. Unzip it to get `app-release.apk`.
-5. Install it on your phone. Android keeps your data when an APK is installed
-   over the previous version signed with the same key (all builds here use the
-   same debug key), so your Stage 1 install can be updated in place.
+1. Unzip this project and upload its contents to a **separate branch** of your
+   existing repository (do not merge it into `main` automatically).
+2. Commit and push the branch. The **Build Android APK** workflow is configured
+   to run on pushes to any branch, or you can use **Run workflow** in Actions.
+3. Inspect formatting, analysis, test and release-build steps. A failed test
+   causes the workflow to end red even if APK compilation succeeded.
+4. If the workflow succeeds, download the **tickoff-apk** artifact and install
+   the APK on your phone. Test it before deciding whether to merge the branch.
 
-The workflow runs the tests but still builds the APK if a test fails, then
-marks the run red so you notice. If the *build* step itself fails, open that
-step in the log and send me the error.
+The uploaded ZIP is the Dart/Flutter **source project**, not an APK. The
+workflow creates the Android scaffold if needed, gets dependencies, runs the
+checks and builds the release APK in GitHub Actions.
 
-### Updating your existing repository
+## Current feature map
 
-Easiest way (browser only):
-
-1. Unzip this project on your computer.
-2. In the repository, delete the old `lib/` and `test/` folders: open each
-   folder, use the "..." menu -> **Delete directory**, and commit.
-3. Click **Add file -> Upload files** and drag in the new `lib`, `test`,
-   `tool` and `.github` folders plus `pubspec.yaml`, `analysis_options.yaml`,
-   `README.md`, `CHANGES_STAGE2_3.md`, `.gitignore`. (If the browser skips the
-   hidden `.github` folder, open `.github/workflows/build_apk.yml` in the
-   repository, click the pencil icon and paste in the new contents.)
-4. Commit to `main`. Do not delete `android/` if it exists in your repo.
-
-If you uploaded `android/` earlier, leave it. If it does not exist the build
-generates it.
-
-## What the app does
-
-* **Dashboard**: weekly date strip (scrolls back 2 years), category chips,
-  All / Due filters with live counts, Habit Score pill, habit cards with
-  progress grid and completion buttons. Tap a card for details; tap the score
-  pill for analytics.
-* **Add / Edit Habit**: title, description, colour, searchable icon picker
-  (about 120 icons), Build or Quit, frequency (everyday, weekdays, days of the
-  month, N days per week/month), tracking (Tick, Count with goal / unit /
-  step, Checklist), reminder settings, category, "Show Streaks on Timeline".
-* **Habit detail**: status, streaks, score, calendar history (tap a day to
-  edit it), achievements, analytics, notes, timeline, options (share, edit,
-  archive/restore, delete).
-* **Analytics (free)**: per-habit or all habits; 7D / 30D / 90D / 1Y / All
-  ranges; stat tiles, completion trend chart, daily/weekly/monthly summaries,
-  streak table, calendar heat map.
-* **Achievements (free)**: 1, 7, 14, 30, 50, 100, 200, 365 and 730 days.
-* **Notes**: create/edit/delete, optionally linked to a habit.
-* **Settings**: Categories and Archive are functional. Theme, Layout,
-  Widgets, General and Rearrange are placeholders for Stage 4.
+- **Dashboard:** selected-day date strip, today's tasks and overdue tasks,
+  scheduled habits, and separate task/habit completion percentages. Habit
+  categories and All/Due filters are in the dedicated Habits destination.
+- **Habits:** existing Add/Edit Habit flow, habit cards, category and Due
+  filters, detail screen, streaks, score, analytics, progress/calendar views,
+  achievements, notes, archive and local settings. The existing Habit Details
+  layout and its Progress/Edit/Delete menu are preserved.
+- **Unified add control:** the centre `+` opens Add Habit or Add Task. Habit
+  creation keeps the existing full-screen form; Add/Edit Task is full-screen.
+- **Tasks:** All Tasks, Today, Due Tasks, selected-date browsing, combined
+  priority/category filters, deadline/priority/category sorts, overdue status,
+  pause/resume, postpone, repeat, duplicate and delete.
+- **Task Details:** tapping a task opens a detail page with status, schedule,
+  priority/category, description, independent subtasks, notes, photo/audio
+  attachments, history and Progress/Edit/Delete actions.
+- **Subtasks:** ordered add/edit/reorder/remove workflow, inherited priority,
+  per-subtask deadline/date/time, checklist progress and automatic parent
+  completion-state synchronisation. Child deadlines are not shifted when the
+  parent deadline is edited or postponed.
+- **Task analytics:** day, week, month, 30-day, 90-day, one-year and custom
+  ranges; completion bars and trend, on-time/late comparison, weighted score,
+  streaks and day-level drill-down. Immutable activity snapshots allow late
+  completion to be attributed to its actual completion day.
+- **Local features:** SQLite storage/migrations, task and habit reminders,
+  text/photo/audio notes, theme and layout settings. No native Android launcher
+  widget is included; the Widgets setting controls in-app dashboard sections.
 
 ## Rules and formulas
 
@@ -122,45 +112,47 @@ kept even if history is edited later.
 
 ## Data and storage
 
-SQLite via `sqflite` (`lib/data/`). Schema version 1:
+SQLite uses `sqflite` in `lib/data/`; the current schema version is **6**.
+Existing habit tables and task records are retained with additive migrations:
 
-* `habits`, `categories`, `completions`, `notes`, `achievements`.
-* `completions` has the primary key `(habit_id, date_key)`, so a habit can
-  never have two records for one day.
-* Foreign keys are enforced: deleting a habit removes its completions,
-  achievements and notes; deleting a category leaves habits uncategorised.
-* Schedule, reminder and checklist are stored as JSON columns.
-* Migrations: bump `AppDatabase.version` and add a step to `_migrations`.
+- **v1:** `habits`, `categories`, `completions`, `notes`, `achievements`.
+- **v2:** `tasks` plus due-date and parent/subtask indexes.
+- **v3:** task `completed_at` plus `task_history` deletion snapshots.
+- **v4:** immutable `task_activity` snapshots and best-available backfill for
+  legacy task creation/completion dates.
+- **v5:** richer task deletion snapshots, including title, parent and category.
+- **v6:** reminder and pause state on activity snapshots.
 
-## Known limitations (deliberate, honest)
+Migrations do not drop or reset existing task or habit tables. Task activity
+and deletion snapshots are retained for approximately 400 days to cover the
+one-year analytics range with a small margin. Active tasks are removed after
+the 30-day deadline retention window when the task service next runs; deletion
+snapshots keep prior analytics from immediately disappearing.
 
-* **Not compiled or tested yet** by the author, see the status note above.
-* **Photo and audio notes** are not implemented: they need the camera and
-  microphone plugins plus Android permissions (planned for Stage 4). The
-  Photo and Audio buttons say so. The note model and database already have
-  fields for attachment paths.
-* **Sharing** copies a text summary to the clipboard. The Android share sheet
-  needs the `share_plus` plugin (Stage 4).
-* **Reminders** are configured and saved but no notification is scheduled yet
-  (Stage 4: `flutter_local_notifications`).
-* The Quit + Count/Checklist behaviour, the weekly/monthly streak rule and the
-  Analytics layout are my interpretation; the supplied screenshots do not
-  show them.
-* The font is Flutter's default, not TickOff's.
-* Release builds use Flutter's default debug signing: fine for your own phone,
-  not for the Play Store.
+## Validation and known limitations
 
-## Tests
+Checks completed in the editing container:
 
-* `test/unit`: dates, models, streak/score engine, achievements, analytics,
-  state notifier (with an in-memory repository).
-* `test/widget`: dashboard, habit form, habit detail, analytics, settings,
-  notes.
-* `test/data`: the real SQLite schema and repository, through
-  `sqflite_common_ffi` (needs `libsqlite3`, installed by the workflow).
+- Dart source delimiter scan and relative-import existence scan across all 102
+  Dart source/test files.
+- YAML parsing of `pubspec.yaml`.
+- `bash -n tool/prepare_android.sh`.
 
-Run locally with `flutter test` once Flutter is installed.
+Checks **not run** because the Flutter/Dart SDK is not installed and external
+network access was unavailable:
 
+- `dart format .`
+- `flutter analyze`
+- `flutter test test/unit test/widget` and `flutter test test/data`
+- `flutter build apk --release --no-tree-shake-icons`
+- Real-device tests or visual comparisons.
+
+The GitHub Actions workflow runs the unavailable checks when this branch is
+pushed. The native Android launcher/home-screen widget is not implemented;
+Widgets settings only toggle in-app dashboard sections. Notification and media
+behaviour still requires Android permission/device verification. The release
+APK uses the generated Android project's default debug signing setup and is
+not configured for Play Store publication.
 
 ## Stage 4 implementation pass (in progress)
 
@@ -180,7 +172,7 @@ This branch adds a local task manager alongside the original habit tracker. It r
 - Overdue tasks remain visible and receive a sorting boost. Paused tasks remain accessible in All Tasks and are excluded from Due Tasks and completion analytics.
 - The monthly date picker shows tasks and scheduled habits for the selected date.
 - A compact combined task/habit panel is included on the main dashboard. Habit-generated items use the existing completion records rather than a separate task completion record.
-- Tasks are removed after the 30-day deadline retention window when the task service next runs. Postponing a parent task moves its subtasks and their reminders by the same day offset. Manual deletion removes the task immediately.
+- Tasks are removed after the 30-day deadline retention window when the task service next runs. Stage 5 supersedes the earlier parent-postpone behavior: child deadlines and reminders remain independent when the parent is postponed. Manual deletion removes the task immediately.
 
 ### Reminders and notes
 - Task reminders use local Android notifications. Habit reminders are restored from the existing reminder settings and scheduled by selected weekday/time.
@@ -195,3 +187,18 @@ This branch adds a local task manager alongside the original habit tracker. It r
 
 ### Validation status
 This project was edited in an environment without the Flutter/Dart SDK and without network access to install it. A source delimiter scan, relative-import existence scan, YAML parsing, and shell syntax check were performed. Flutter formatting, static analysis, the complete Flutter test suite, Android APK compilation, and real-device verification have **not** been run here. Use the GitHub Actions workflow to perform those checks before installing this candidate as an upgrade. Treat any compile/test failures as unresolved until their logs are reviewed.
+
+
+## Stage 5 enhancement pass (newest changes in this ZIP)
+
+- Added a dedicated Habits bottom-navigation section. The Dashboard now focuses on the selected day and displays task progress and habit progress separately.
+- The single centre add control opens **Add Habit** or **Add Task**. Add Task and Edit Task are full-screen forms; tapping a task opens a full-screen Task Details page with Progress, Edit and Delete actions.
+- Added combined priority/category filtering, deadline/priority/category sorting, reminder-aware Today/Due visibility, date browsing, and larger Today-list text with explicit status.
+- Added a full-screen ordered Subtask Editor with add/edit/reorder/remove and independent stored deadlines. Parent deadline/postpone changes do not rewrite child deadlines.
+- Expanded task analytics to day, week, month, 30-day, 90-day, one-year and custom ranges; daily bar/trend visualisations; on-time/late comparisons; weighted scores; streaks; and day-level drill-down.
+- SQLite schema version 6 adds immutable task activity snapshots, preserves deleted subtask snapshots, backfills best-available activity for Stage 4 data, and keeps analytics records for approximately 400 days. It uses additive migrations and does not drop existing habit/task tables.
+- Task visibility follows reminder dates: a task with a reminder appears starting on its reminder date, remains visible through its deadline, and remains overdue after its deadline until completed. Tasks without reminders continue to appear from their deadline.
+
+### Validation status for this enhancement pass
+
+The uploaded project was edited in an environment without Flutter/Dart installed and with network access unavailable. Relative-import and delimiter scans passed across 102 Dart source/test files; `pubspec.yaml` parsing and `bash -n tool/prepare_android.sh` passed. `dart format`, `flutter analyze`, `flutter test`, `flutter build apk`, and real-device validation **were not run**. Push the ZIP contents to a separate branch and inspect GitHub Actions before replacing your working branch. This is source code, not a verified APK build.

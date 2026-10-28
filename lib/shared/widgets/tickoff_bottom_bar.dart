@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 
-/// Bottom navigation for Dashboard, Tasks, and Notes, with a central add button.
+/// Bottom navigation for Dashboard, Habits, Tasks and Notes, with one shared add button.
 class TickoffBottomBar extends StatelessWidget {
   const TickoffBottomBar({
     super.key,
@@ -12,7 +12,7 @@ class TickoffBottomBar extends StatelessWidget {
     required this.onAdd,
   });
 
-  /// 0 = dashboard, 1 = tasks, 2 = notes.
+  /// 0 = dashboard, 1 = habits, 2 = tasks, 3 = notes.
   final int currentIndex;
   final ValueChanged<int> onSelect;
   final VoidCallback onAdd;
@@ -35,9 +35,10 @@ class TickoffBottomBar extends StatelessWidget {
                   onTap: () => onSelect(0),
                 ),
               ),
+              Expanded(child: _NavIcon(icon: Icons.check_circle_outline_rounded, label: 'Habits', selected: currentIndex == 1, onTap: () => onSelect(1))),
               Semantics(
                 button: true,
-                label: 'Add habit',
+                label: 'Add task or habit',
                 child: GestureDetector(
                   onTap: onAdd,
                   child: Container(
@@ -51,8 +52,8 @@ class TickoffBottomBar extends StatelessWidget {
                   ),
                 ),
               ),
-              Expanded(child: _NavIcon(icon: Icons.task_alt_rounded, label: 'Tasks', selected: currentIndex == 1, onTap: () => onSelect(1))),
-              Expanded(child: _NavIcon(icon: Icons.sticky_note_2_rounded, label: 'Notes', selected: currentIndex == 2, onTap: () => onSelect(2))),
+              Expanded(child: _NavIcon(icon: Icons.task_alt_rounded, label: 'Tasks', selected: currentIndex == 2, onTap: () => onSelect(2))),
+              Expanded(child: _NavIcon(icon: Icons.sticky_note_2_rounded, label: 'Notes', selected: currentIndex == 3, onTap: () => onSelect(3))),
             ],
           ),
         ),
@@ -83,10 +84,27 @@ class _NavIcon extends StatelessWidget {
       child: InkResponse(
         onTap: onTap,
         radius: 32,
-        child: Icon(
-          icon,
-          size: 28,
-          color: selected ? AppColors.gold : AppColors.textHint,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Icon(
+              icon,
+              size: 28,
+              color: selected ? AppColors.gold : AppColors.textHint,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                color: selected ? AppColors.gold : AppColors.textHint,
+              ),
+            ),
+          ],
         ),
       ),
     );

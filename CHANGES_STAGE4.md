@@ -26,3 +26,14 @@
 - Task/ habit synchronization has been implemented through shared habit completion state for the dashboard/task actions, but still requires full integration tests on GitHub Actions and a real device.
 
 This ZIP is a development candidate, not a verified release APK source. Do not overwrite the working project until GitHub Actions and device checks pass.
+
+
+## Stage 5 enhancement pass (latest)
+
+- Separated the Dashboard and Habits destination; added a unified Add Task/Add Habit launcher choice without replacing existing navigation icons.
+- Added full-screen task creation/editing and Task Details/Task Progress pages. The task row tap no longer opens the editor.
+- Added composable task priority/category filters, four sort modes, selectable date browsing, status labels and reminder-aware visibility.
+- Added a full-screen ordered subtask editor with individual deadlines, reorder/edit/remove and inherited parent priority. Parent date changes no longer shift child deadlines.
+- Reworked task analytics into selectable day/week/month/30-day/90-day/year/custom ranges with actual-day completion events, trend visualization, detailed completion statuses and subtask contributions.
+- Advanced SQLite schema to v6 using additive migration steps; completion/reopen/schedule snapshots and deleted child snapshots are retained for analytics, and records are pruned after roughly 400 days.
+- Validation performed: source delimiters and relative imports, YAML parse, and Android prep shell syntax. Flutter format/analyze/tests/build and device validation remain unrun because Flutter/Dart is not available in this environment.
