@@ -65,10 +65,20 @@ class AppDataNotifier extends AsyncNotifier<AppData> {
       achievements: achievements,
       notes: notes,
     );
-    // Restore scheduled reminders for existing habits after app restart.
+    // Restore only enabled reminders after app restart. Disabled reminders
+    // have already been cancelled when the user disabled/archived the habit;
+    // repeatedly calling the platform plugin for every disabled habit is both
+    // unnecessary and can block environments where notifications are absent.
     for (final Habit h in habits) {
+      if (!h.reminder.enabled || h.isArchived) continue;
       try {
-        if (h.reminder.enabled && !h.isArchived) { await LocalNotifications.instance.scheduleHabit(id: h.id, title: h.title, hour: h.reminder.hour, minute: h.reminder.minute, weekdays: h.reminder.weekdays); } else { await LocalNotifications.instance.cancel(h.id); }
+        await LocalNotifications.instance.scheduleHabit(
+          id: h.id,
+          title: h.title,
+          hour: h.reminder.hour,
+          minute: h.reminder.minute,
+          weekdays: h.reminder.weekdays,
+        );
       } catch (_) { /* reminder restoration must not block the habit tracker */ }
     }
     // Back-fill achievements reached before this version stored them.
@@ -115,11 +125,20 @@ class AppDataNotifier extends AsyncNotifier<AppData> {
   Future<void> saveHabit(Habit habit) async {
     final String? problem = habit.validate();
     if (problem != null) throw ArgumentError(problem);
+    final Habit? previousHabit = _current.habitById(habit.id);
     await _repo.upsertHabit(habit);
     try {
       if (habit.reminder.enabled && !habit.isArchived) {
-        await LocalNotifications.instance.scheduleHabit(id: habit.id, title: habit.title, hour: habit.reminder.hour, minute: habit.reminder.minute, weekdays: habit.reminder.weekdays);
-      } else {
+        await LocalNotifications.instance.scheduleHabit(
+          id: habit.id,
+          title: habit.title,
+          hour: habit.reminder.hour,
+          minute: habit.reminder.minute,
+          weekdays: habit.reminder.weekdays,
+        );
+      } else if (previousHabit?.reminder.enabled ?? false) {
+        // Avoid touching platform notification channels for newly created
+        // habits that never had reminders enabled.
         await LocalNotifications.instance.cancel(habit.id);
       }
     } catch (_) { /* keep the habit save successful if notifications are unavailable */ }
@@ -148,7 +167,12 @@ class AppDataNotifier extends AsyncNotifier<AppData> {
 
   /// Permanently deletes a habit, its history, achievements and notes.
   Future<void> deleteHabit(String habitId) async {
-    try { await LocalNotifications.instance.cancel(habitId); } catch (_) { /* deleting a habit must not depend on notification availability */ }
+    final Habit? deletingHabit = _current.habitById(habitId);
+    if (deletingHabit?.reminder.enabled ?? false) {
+      try {
+        await LocalNotifications.instance.cancel(habitId);
+      } catch (_) { /* deleting a habit must not depend on notification availability */ }
+    }
     for (final Note note in _current.notes.where((Note n) => n.habitId == habitId)) { for (final String path in note.photoPaths) { await LocalAttachments.deleteFile(path); } for (final String path in note.audioPaths) { await LocalAttachments.deleteFile(path); } }
     await _repo.deleteHabit(habitId);
     final AppData data = _current;

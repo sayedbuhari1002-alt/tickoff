@@ -145,7 +145,9 @@ void main() {
     expect(find.text('Select at least one weekday.'), findsOneWidget);
 
     await tester.tap(find.text('Mo'));
+    await tester.pump();
     await tester.tap(find.text('Th'));
+    await tester.pump();
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
     final Habit saved = repo.habits.values.single;

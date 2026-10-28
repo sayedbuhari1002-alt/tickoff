@@ -6,9 +6,16 @@ import 'package:tickoff_replacement/core/router/app_router.dart';
 import 'package:tickoff_replacement/core/router/routes.dart';
 import 'package:tickoff_replacement/core/utils/date_utils.dart';
 import 'package:tickoff_replacement/domain/models/models.dart';
+import 'package:tickoff_replacement/domain/models/task.dart';
 import 'package:tickoff_replacement/state/app_state.dart';
+import 'package:tickoff_replacement/state/task_state.dart';
 
 import 'in_memory_repository.dart';
+
+class _EmptyTaskListNotifier extends TaskListNotifier {
+  @override
+  Future<List<TaskItem>> build() async => <TaskItem>[];
+}
 
 /// The fixed "today" used by all widget tests: Tuesday 27 Oct 2026.
 final DateTime kToday = DateTime(2026, 10, 27);
@@ -69,6 +76,7 @@ Future<InMemoryAppRepository> pumpApp(
         appRouterProvider.overrideWithValue(
           buildRouter(initialLocation: location),
         ),
+        taskListProvider.overrideWith(_EmptyTaskListNotifier.new),
       ],
       child: const TickOffApp(),
     ),
