@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../domain/logic/analytics_engine.dart';
-import '../../domain/logic/habit_engine.dart';
 import '../../domain/models/habit.dart';
 
 class StreakHistoryPoint {

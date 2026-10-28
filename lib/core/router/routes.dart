@@ -4,8 +4,12 @@ class AppRoutes {
 
   // Bottom-navigation tabs (inside the shell)
   static const String dashboard = '/dashboard';
+  static const String habits = '/habits';
   static const String notes = '/notes';
   static const String tasks = '/tasks';
+  static const String taskNew = '/task/new';
+  static String taskDetail(String id) => '/task/$id';
+  static const String taskAnalytics = '/task-analytics';
 
   // Habits (full-screen, no bottom bar)
   static const String habitNew = '/habit/new';

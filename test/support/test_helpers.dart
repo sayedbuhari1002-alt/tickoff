@@ -84,3 +84,9 @@ Future<InMemoryAppRepository> pumpApp(
   await tester.pumpAndSettle();
   return r;
 }
+
+/// Opens the dedicated Habits destination from the shared bottom navigation.
+Future<void> openHabitsTab(WidgetTester tester) async {
+  await tester.tap(find.byIcon(Icons.check_circle_outline_rounded).last);
+  await tester.pumpAndSettle();
+}

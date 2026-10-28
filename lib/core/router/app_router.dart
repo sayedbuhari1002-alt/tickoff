@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/analytics/analytics_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
+import '../../features/dashboard/habits_screen.dart';
 import '../../features/habit_detail/habit_detail_screen.dart';
 import '../../features/habit_form/habit_form_screen.dart';
 import '../../features/notes/note_editor_screen.dart';
@@ -15,6 +16,9 @@ import '../../features/settings/feature_settings_screen.dart';
 import '../../features/share/share_progress_screen.dart';
 import '../../features/shell/app_shell.dart';
 import '../../features/tasks/tasks_screen.dart';
+import '../../features/tasks/task_form_screen.dart';
+import '../../features/tasks/task_detail_screen.dart';
+import '../../features/tasks/task_analytics_screen.dart';
 import 'routes.dart';
 
 /// App-wide router instance.
@@ -24,8 +28,9 @@ final Provider<GoRouter> appRouterProvider =
 /// Builds the route table. Dashboard and Notes live inside the shell (with the
 /// bottom bar); everything else is full-screen on the root navigator.
 ///
-/// Order matters: `/habit/new` and `/note/new` must be declared before the
-/// `:id` routes.
+/// Dashboard, Habits, Tasks and Notes live inside the shell. Form/detail routes
+/// are full-screen above it. Order matters: `/habit/new` and `/note/new` must
+/// be declared before the `:id` routes.
 GoRouter buildRouter({String initialLocation = AppRoutes.dashboard}) {
   return GoRouter(
     initialLocation: initialLocation,
@@ -46,6 +51,11 @@ GoRouter buildRouter({String initialLocation = AppRoutes.dashboard}) {
           ),
           StatefulShellBranch(
             routes: <RouteBase>[
+              GoRoute(path: AppRoutes.habits, builder: (BuildContext c, GoRouterState s) => const HabitsScreen()),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
               GoRoute(path: AppRoutes.tasks, builder: (BuildContext c, GoRouterState s) => const TasksScreen()),
             ],
           ),
@@ -59,6 +69,18 @@ GoRouter buildRouter({String initialLocation = AppRoutes.dashboard}) {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: AppRoutes.taskNew,
+        builder: (BuildContext c, GoRouterState s) => const TaskFormScreen(),
+      ),
+      GoRoute(
+        path: '/task/:id',
+        builder: (BuildContext c, GoRouterState s) => TaskDetailScreen(taskId: s.pathParameters['id'] ?? ''),
+      ),
+      GoRoute(
+        path: AppRoutes.taskAnalytics,
+        builder: (BuildContext c, GoRouterState s) => const TaskAnalyticsScreen(),
       ),
       GoRoute(
         path: AppRoutes.habitNew,

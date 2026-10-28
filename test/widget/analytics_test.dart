@@ -83,9 +83,10 @@ void main() {
   testWidgets('the detail screen opens analytics for that habit',
       (WidgetTester tester) async {
     await pumpApp(tester, repo: seededTwo());
-    await tester.tap(find.text('Alpha'));
+    await openHabitsTab(tester);
+    await tester.tap(find.byKey(const ValueKey<String>('a')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.bar_chart_rounded));
+    await tester.tap(find.byTooltip('Analytics'));
     await tester.pumpAndSettle();
 
     expect(find.text('Analytics'), findsOneWidget);
@@ -97,7 +98,7 @@ void main() {
   testWidgets('the score pill on the dashboard opens analytics',
       (WidgetTester tester) async {
     await pumpApp(tester, repo: seededTwo());
-    await tester.tap(find.byIcon(Icons.speed_rounded));
+    await tester.tap(find.text('Habit analytics'));
     await tester.pumpAndSettle();
     expect(find.text('Analytics'), findsOneWidget);
   });

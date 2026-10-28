@@ -6,14 +6,17 @@ import 'package:sqflite/sqflite.dart';
 /// Schema version history:
 /// * 1 - initial schema (categories, habits, completions, notes, achievements).
 /// * 2 - local tasks and subtasks.
-/// * 3 - task completion timestamps and deletion-history snapshots for 30-day analytics.
+/// * 3 - task completion timestamps and deletion-history snapshots.
+/// * 4 - immutable task/subtask completion activity snapshots for historical analytics.
+/// * 5 - richer deletion snapshots so deleted subtasks remain in analytics.
+/// * 6 - reminder/pause state snapshots in the activity log.
 ///
 /// To change the schema, bump [version], add a step to [_migrations] that
 /// upgrades from the previous version, and keep [_createV1] untouched.
 class AppDatabase {
   AppDatabase._();
 
-  static const int version = 3;
+  static const int version = 6;
   static const String fileName = 'tickoff.db';
 
   /// Opens (creating if needed) the database. Pass [path] to use another file
@@ -31,6 +34,9 @@ class AppDatabase {
         await _createV1(db);
         if (newVersion >= 2) await _createV2(db);
         if (newVersion >= 3) await _createV3(db);
+        if (newVersion >= 4) await _createV4(db);
+        if (newVersion >= 5) await _createV5(db);
+        if (newVersion >= 6) await _createV6(db);
       },
       onUpgrade: (Database db, int oldVersion, int newVersion) async {
         for (int v = oldVersion; v < newVersion; v++) {
@@ -43,7 +49,7 @@ class AppDatabase {
 
   /// Upgrade steps keyed by the version they upgrade FROM (1 -> 2 is key 1).
   static final Map<int, Future<void> Function(Database db)> _migrations =
-      <int, Future<void> Function(Database db)>{1: _createV2, 2: _createV3};
+      <int, Future<void> Function(Database db)>{1: _createV2, 2: _createV3, 3: _createV4, 4: _createV5, 5: _createV6};
 
   static Future<void> _createV2(Database db) async {
     await db.execute('''
@@ -60,6 +66,60 @@ class AppDatabase {
     ''');
     await db.execute('CREATE INDEX idx_tasks_due ON tasks(due_date)');
     await db.execute('CREATE INDEX idx_tasks_parent ON tasks(parent_id, sort_order)');
+  }
+
+  static Future<void> _createV6(Database db) async {
+    await db.execute('ALTER TABLE task_activity ADD COLUMN reminder_at TEXT');
+    await db.execute('ALTER TABLE task_activity ADD COLUMN is_paused INTEGER NOT NULL DEFAULT 0');
+    // Recover reminder and pause state for active Stage 4 task snapshots.
+    await db.execute('''
+      UPDATE task_activity
+      SET reminder_at = (SELECT reminder_at FROM tasks WHERE tasks.id = task_activity.task_id),
+          is_paused = COALESCE((SELECT is_paused FROM tasks WHERE tasks.id = task_activity.task_id), 0)
+      WHERE task_id IN (SELECT id FROM tasks)
+    ''');
+  }
+
+  static Future<void> _createV5(Database db) async {
+    await db.execute("ALTER TABLE task_history ADD COLUMN title TEXT NOT NULL DEFAULT 'Deleted task'");
+    await db.execute('ALTER TABLE task_history ADD COLUMN parent_id TEXT');
+    await db.execute("ALTER TABLE task_history ADD COLUMN category TEXT NOT NULL DEFAULT ''");
+    await db.execute('CREATE INDEX idx_task_history_deleted ON task_history(deleted_at)');
+  }
+
+  static Future<void> _createV4(Database db) async {
+    await db.execute('''
+      CREATE TABLE task_activity (
+        id TEXT PRIMARY KEY,
+        task_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        due_date TEXT NOT NULL,
+        priority INTEGER NOT NULL DEFAULT 2,
+        activity_type TEXT NOT NULL,
+        occurred_at TEXT NOT NULL,
+        parent_id TEXT,
+        category TEXT NOT NULL DEFAULT '',
+        created_at TEXT
+      )
+    ''');
+    await db.execute('CREATE INDEX idx_task_activity_occurred ON task_activity(occurred_at)');
+    await db.execute('CREATE INDEX idx_task_activity_task ON task_activity(task_id, occurred_at)');
+    await db.execute('CREATE INDEX idx_task_activity_due ON task_activity(due_date)');
+    // Backfill immutable snapshots for Stage 4 tasks before future edits can
+    // change their current deadline/title. Existing completion timestamps are
+    // used as the best available historical completion dates.
+    await db.execute('''
+      INSERT OR IGNORE INTO task_activity
+        (id, task_id, title, due_date, priority, activity_type, occurred_at, parent_id, category, created_at)
+      SELECT 'legacy-created-' || id, id, title, due_date, priority, 'created', created_at, parent_id, category, created_at
+      FROM tasks
+    ''');
+    await db.execute('''
+      INSERT OR IGNORE INTO task_activity
+        (id, task_id, title, due_date, priority, activity_type, occurred_at, parent_id, category, created_at)
+      SELECT 'legacy-completed-' || id, id, title, due_date, priority, 'completed', completed_at, parent_id, category, created_at
+      FROM tasks WHERE is_completed = 1 AND completed_at IS NOT NULL
+    ''');
   }
 
   static Future<void> _createV3(Database db) async {

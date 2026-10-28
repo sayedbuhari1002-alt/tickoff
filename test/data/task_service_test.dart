@@ -21,11 +21,13 @@ void main() {
 
   tearDown(() async => db.close());
 
-  test('schema v3 preserves completion timestamps and deletion analytics history', () async {
+  test('schema v6 preserves completion timestamps and deletion analytics history', () async {
     final List<Map<String, Object?>> columns = await db.rawQuery('PRAGMA table_info(tasks)');
     expect(columns.any((Map<String, Object?> row) => row['name'] == 'completed_at'), isTrue);
-    final List<Map<String, Object?>> historyTables = await db.rawQuery("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'task_history'");
-    expect(historyTables, isNotEmpty);
+    final List<Map<String, Object?>> historyTables = await db.rawQuery("SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('task_history', 'task_activity')");
+    expect(historyTables, hasLength(2));
+    final List<Map<String, Object?>> activityColumns = await db.rawQuery('PRAGMA table_info(task_activity)');
+    expect(activityColumns.any((Map<String, Object?> row) => row['name'] == 'reminder_at'), isTrue);
 
     final DateTime due = DateTime(2026, 10, 28);
     final TaskItem item = TaskItem(id: 'task-history-test', title: 'Task', createdAt: due, updatedAt: due, dueDate: due, priority: 4, isCompleted: true, completedAt: due);

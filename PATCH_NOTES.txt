@@ -1,0 +1,21 @@
+TickOff Stage 4 CI fix patch
+
+Copy the contents of this ZIP into the root of your existing tickoff_replacement project and replace matching files.
+
+Included fixes:
+- Build release APK with --no-tree-shake-icons because task icons use runtime IconData code points.
+- Avoid scheduling/cancelling native notifications for habits that have reminders disabled, and only cancel when an existing enabled reminder is switched off or the habit is deleted. This also prevents widget tests from waiting on unavailable platform notification channels.
+- Use a Material surface for SectionCard so ListTile ink/splash assertions do not fail in widget tests.
+- Override taskListProvider in the habit-focused widget-test harness because these tests use an in-memory habit repository and do not create a real task SQLite database.
+- Pump between weekday-chip taps in the widget test so the first selection is rebuilt before the second tap.
+
+This patch has not been run with Flutter in this environment. A fresh GitHub Actions run is required to verify tests and APK compilation.
+
+
+TickOff Stage 5 enhancements
+
+- Dashboard/Habits split and single Add Task/Add Habit control.
+- Full-screen task editor, task details and progress pages.
+- Task filters, sorting, reminder-aware visibility, independent subtask deadline editing and expanded task analytics.
+- Additive SQLite migrations through schema v6; no database reset or automatic branch merge.
+- Flutter/Dart runtime validation was not possible in the editing environment; review the GitHub Actions run on a separate branch.

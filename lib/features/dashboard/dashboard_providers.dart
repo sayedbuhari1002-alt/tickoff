@@ -15,7 +15,7 @@ class SelectedDateNotifier extends Notifier<DateTime> {
 final NotifierProvider<SelectedDateNotifier, DateTime> selectedDateProvider =
     NotifierProvider<SelectedDateNotifier, DateTime>(SelectedDateNotifier.new);
 
-/// All / Due filter on the dashboard list.
+/// All / Due filter on the dedicated Habits list.
 enum HabitListFilter { all, due }
 
 class HabitFilterNotifier extends Notifier<HabitListFilter> {
